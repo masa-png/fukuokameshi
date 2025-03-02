@@ -12,3 +12,105 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+// 会員情報テーブル
+model User {
+  id           String   @id @default(uuid())
+  name         String   @map("名前")
+  emailAddress String   @unique @map("メールアドレス")
+  password     String   @map("パスワード")
+  postalCode   String?  @map("郵便番号")
+  address      String?  @map("住所")
+  phoneNumber  String?  @map("電話番号")
+  createdAt    DateTime @default(now()) @map("登録日")
+  updatedAt    DateTime @updatedAt @map("更新日")
+
+  reservations Reservation[]
+  reviews      Review[]
+
+  @@map("会員情報")
+}
+
+// 店舗情報テーブル
+model Restaurant {
+  id             String    @id @default(uuid())
+  categoryId     String    @map("カテゴリID")
+  name           String    @map("店名")
+  image          String?   @map("画像")
+  description    String?   @map("説明")
+  minPrice       Int?      @map("価格帯（下限）")
+  maxPrice       Int?      @map("価格帯（上限）")
+  openTime       DateTime? @map("営業時間")
+  closeingTime   DateTime? @map("閉店時間")
+  postalCode     String?   @map("郵便番号")
+  address        String?   @map("住所")
+  phoneNumber    String?   @map("電話番号")
+  regularHoliday String?   @map("定休日")
+  createdAt      DateTime  @default(now()) @map("登録日")
+  updatedAt      DateTime  @updatedAt @map("更新日")
+
+  category     Category      @relation(fields: [categoryId], references: [id])
+  reservations Reservation[]
+  reviews      Review[]
+
+  @@map("店舗情報")
+}
+
+// 予約テーブル
+model Reservation {
+  id           String   @id @default(uuid())
+  userId       String   @map("会員ID")
+  restaurantId String   @map("店舗ID")
+  date         DateTime @map("予約日")
+  people       Int      @map("人数")
+  createdAt    DateTime @default(now()) @map("登録日")
+  updatedAt    DateTime @updatedAt @map("更新日")
+
+  user        User       @relation(fields: [userId], references: [id])
+  restaurants Restaurant @relation(fields: [restaurantId], references: [id])
+
+  @@map("予約")
+}
+
+// レビューテーブル
+model Review {
+  id            String   @id @default(uuid())
+  UserId        String   @map("会員ID")
+  restaurantsId String   @map("店舗ID")
+  rating        Int      @map("星の数")
+  comment       String?  @map("コメント")
+  createdAt     DateTime @default(now()) @map("登録日")
+  updatedAt     DateTime @updatedAt @map("更新日")
+
+  user        User       @relation(fields: [UserId], references: [id])
+  restaurants Restaurant @relation(fields: [restaurantsId], references: [id])
+
+  @@map("レビュー")
+}
+
+// カテゴリテーブル
+model Category {
+  id        String   @id @default(uuid())
+  name      String   @map("カテゴリ名")
+  createdAt DateTime @default(now()) @map("登録日")
+  updatedAt DateTime @updatedAt @map("更新日")
+
+  restaurants Restaurant[]
+
+  @@map("カテゴリ")
+}
+
+// 会社情報テーブル
+model Company {
+  id             String    @id @default(uuid())
+  name           String    @map("会社名")
+  representative String?   @map("代表")
+  established    DateTime? @map("設立日")
+  postalCode     String?   @map("郵便番号")
+  address        String?   @map("住所")
+  business       String?   @map("事業内容")
+  createdAt      DateTime  @default(now()) @map("登録日")
+  updatedAt      DateTime  @updatedAt @map("更新日")
+
+  @@map("会社情報")
+}
